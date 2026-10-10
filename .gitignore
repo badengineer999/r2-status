@@ -1,0 +1,3 @@
+.env
+*.tokens
+__pycache__/
