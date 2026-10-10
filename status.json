@@ -2,12 +2,12 @@
   "stage": "ordered",
   "state": "ORDERED",
   "fulfillment": "PENDING_FULFILLMENT",
-  "config_status": "",
-  "config": "Midnight · Black Crater · 21\" AS",
+  "config_status": "SOFT_LOCKED",
+  "config": "Midnight · Black Crater Signature · 21\" Liquid Tungsten All-Season",
   "reserved": "April 19, 2024",
   "eta": "",
   "eta_date": "",
   "note": "",
-  "updated": "",
+  "updated": "2026-10-10",
   "image": "https://media.rivian.com/rivian-main/unreal-v2/r2/exterior/angle-0_bg-studio_bld-prf2_exp-mdn_tow-001_whl-21b.webp"
 }
