@@ -14,6 +14,28 @@ STATE_TO_STAGE = {
 }
 FIELDS = ("fulfillmentSummaryStatus", "state", "configurationStatus")
 
+def widget_fields(snap):
+    """Display-only fields from the API. Skips anything missing."""
+    out = {}
+    if snap.get("configurationStatus"):
+        out["config_status"] = snap["configurationStatus"]
+    od = snap.get("orderDate")
+    if od:
+        try:
+            d = datetime.datetime.fromisoformat(od.replace("Z", "+00:00"))
+            out["reserved"] = f"{d:%B} {d.day}, {d.year}"
+        except ValueError:
+            pass
+    opts = {}
+    for item in snap.get("items") or []:
+        cfg = (item or {}).get("configuration") or {}
+        for o in cfg.get("options") or []:
+            opts[o.get("groupId")] = o.get("optionName")
+    parts = [opts[k] for k in ("EXP", "INT", "WHL") if opts.get(k)]
+    if parts:
+        out["config"] = " · ".join(parts)
+    return out
+
 def pick_stage(snapshots):
     for snap in snapshots:
         for f in FIELDS:
@@ -28,23 +50,33 @@ async def main():
         os.environ["RIVIAN_CSRF_TOKEN"],
         os.environ["RIVIAN_USER_SESSION_TOKEN"],
     )
-    stage = pick_stage(states)
-    if not stage:
-        # These are status enums only (no personal data), so safe to log.
-        seen = [(x.get("state"), x.get("fulfillmentSummaryStatus")) for x in states]
-        print(f"Unmapped status (state, fulfillment): {seen}; status.json unchanged")
+    if not states:
+        print("No orders returned; status.json unchanged")
         return
+    # Prefer an order whose status we recognize; otherwise the first one.
+    snap = next((x for x in states if pick_stage([x])), states[0])
+    stage = pick_stage([snap])
     with open("status.json") as f:
         data = json.load(f)
-    if data.get("stage") == stage:
-        print("Stage unchanged")
+    new = {
+        "state": snap.get("state"),
+        "fulfillment": snap.get("fulfillmentSummaryStatus"),
+        **widget_fields(snap),
+    }
+    if stage:
+        new["stage"] = stage
+    else:
+        # Status enums only (no personal data), so safe to log.
+        print(f"Unmapped status: {new['state']} / {new['fulfillment']}")
+    if all(data.get(k) == v for k, v in new.items()):
+        print("Status unchanged")
         return
-    data["stage"] = stage
+    data.update(new)
     data["updated"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d")
     with open("status.json", "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
-    print(f"Stage updated to {stage}")
+    print(f"Status updated: {new['state']} / {new['fulfillment']}")
 
 try:
     asyncio.run(main())

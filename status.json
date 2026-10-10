@@ -1,5 +1,10 @@
 {
   "stage": "ordered",
+  "state": "ORDERED",
+  "fulfillment": "PENDING_FULFILLMENT",
+  "config_status": "",
+  "config": "Midnight · Black Crater · 21\" AS",
+  "reserved": "April 19, 2024",
   "eta": "",
   "eta_date": "",
   "note": "",

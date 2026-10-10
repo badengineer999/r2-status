@@ -31,10 +31,11 @@ async def main():
         missing = [k for k, v in tokens.items() if not v]
         if missing:
             sys.exit(f"Login worked but these tokens were not found: {missing}")
-        print("\nCreate these as GitHub Actions secrets (name = value):\n")
-        for k, v in tokens.items():
-            print(f"{k}\n{v}\n")
-        print("Order state fields (safe to share with Claude):")
+        if "--probe" not in sys.argv:
+            print("\nCreate these as GitHub Actions secrets (name = value):\n")
+            for k, v in tokens.items():
+                print(f"{k}\n{v}\n")
+        print("Order fields (check for anything personal before sharing):")
         states = await fetch_order_states(
             tokens["RIVIAN_APP_SESSION_TOKEN"],
             tokens["RIVIAN_CSRF_TOKEN"],
