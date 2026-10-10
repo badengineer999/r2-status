@@ -23,7 +23,7 @@ h1{margin-top:3vmin;font-size:clamp(22px,6vmin,64px);font-weight:600;letter-spac
 </style>
 </head>
 <body>
-<img id="car" alt="Rivian R2" referrerpolicy="no-referrer">
+<img id="car" src="car.jpg" alt="Rivian R2">
 <div class="raw" id="raw"></div>
 <h1 id="headline">Loading…</h1>
 <p class="line" id="config"></p>
@@ -42,7 +42,7 @@ const HEADLINES={
 };
 const $=id=>document.getElementById(id);
 const car=$("car");
-car.onerror=()=>{if(!car.dataset.fb){car.dataset.fb="1";car.src="car.jpg"}else car.remove()};
+car.onerror=()=>{const h=document.createElement("p");h.className="raw";h.textContent="Image not found: car.jpg must be in the same folder as index.html";car.replaceWith(h)};
 const esc=t=>String(t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 function render(s){
   $("headline").textContent=HEADLINES[s.stage]||"Your R2 order";
@@ -54,8 +54,6 @@ function render(s){
   if(s.fulfillment)raw.push("Fulfillment: "+nice(s.fulfillment));
   if(s.config_status)raw.push("Configuration: "+nice(s.config_status));
   $("raw").innerHTML=raw.map(t=>"<div>"+t+"</div>").join("");
-  const want=s.image||"car.jpg";
-  if(car.dataset.want!==want){car.dataset.want=want;car.dataset.fb="";car.src=want}
   let eta="";
   if(s.eta_date){
     const d0=new Date(s.eta_date+"T00:00:00"),d=Math.ceil((d0-new Date())/864e5);
