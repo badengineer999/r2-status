@@ -39,6 +39,7 @@ async def main():
             tokens["RIVIAN_APP_SESSION_TOKEN"],
             tokens["RIVIAN_CSRF_TOKEN"],
             tokens["RIVIAN_USER_SESSION_TOKEN"],
+            debug=True,
         )
         for s in states:
             print(s)

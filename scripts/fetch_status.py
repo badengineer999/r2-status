@@ -8,7 +8,9 @@ from rivian_orders import fetch_order_states
 # values are widget stages: ordered, confirmed, production, shipped,
 # scheduled, delivered.
 STATE_TO_STAGE = {
-    # "SOME_RIVIAN_STATE": "confirmed",
+    "PENDING_FULFILLMENT": "ordered",   # confirmed from a real R2 order
+    # Add new values here as Rivian's status changes, e.g.:
+    # "SOME_RIVIAN_STATE": "in production stage key",
 }
 FIELDS = ("fulfillmentSummaryStatus", "state", "configurationStatus")
 
@@ -28,7 +30,9 @@ async def main():
     )
     stage = pick_stage(states)
     if not stage:
-        print("No mapped stage found; status.json unchanged")
+        # These are status enums only (no personal data), so safe to log.
+        seen = [(x.get("state"), x.get("fulfillmentSummaryStatus")) for x in states]
+        print(f"Unmapped status (state, fulfillment): {seen}; status.json unchanged")
         return
     with open("status.json") as f:
         data = json.load(f)
