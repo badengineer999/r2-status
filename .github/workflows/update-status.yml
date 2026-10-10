@@ -2,9 +2,8 @@ name: Update order status
 
 on:
   workflow_dispatch:
-  # Uncomment after one manual run succeeds:
-  # schedule:
-  #   - cron: "*/30 * * * *"
+  schedule:
+    - cron: "17 * * * *"
 
 permissions:
   contents: write
