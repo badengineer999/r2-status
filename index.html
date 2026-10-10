@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R2 order status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#14201c;--ink:#e9e4d6;--muted:#8c9a92;--line:#34453e;--accent:#f5a800}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:Archivo,system-ui,-apple-system,Segoe UI,sans-serif;
+  display:flex;flex-direction:column;justify-content:space-between;padding:5vmin 6vmin;overflow:hidden}
+.top{display:flex;justify-content:space-between;align-items:baseline;color:var(--muted);font-size:max(2.6vmin,14px)}
+.eta{text-align:right}
+.eta b{display:block;color:var(--ink);font-size:max(5vmin,20px);font-weight:700;line-height:1.1}
+.stage{font-size:clamp(28px,11vmin,120px);font-weight:800;line-height:1;letter-spacing:-.02em}
+.note{margin-top:2vmin;color:var(--muted);font-size:max(3vmin,15px);max-width:34em}
+.track{display:flex;list-style:none;padding:0}
+.stop{flex:1;position:relative;padding-top:4.5vmin;font-size:max(2.2vmin,11px);color:var(--muted)}
+.stop::before{content:"";position:absolute;top:1.2vmin;left:-50%;width:100%;height:2px;background:var(--line)}
+.stop:first-child::before{display:none}
+.stop::after{content:"";position:absolute;top:0;left:0;width:2.4vmin;height:2.4vmin;min-width:12px;min-height:12px;
+  border-radius:50%;border:2px solid var(--line);background:var(--bg)}
+.stop.done{color:var(--ink)}
+.stop.done::before,.stop.current::before{background:var(--accent)}
+.stop.done::after{background:var(--ink);border-color:var(--ink)}
+.stop.current{color:var(--accent);font-weight:700}
+.stop.current::after{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 .8vmin rgba(245,168,0,.25)}
+.updated{margin-top:2vmin;color:var(--muted);font-size:max(1.9vmin,10px)}
+@media (prefers-reduced-motion:no-preference){.stop.current::after{animation:pulse 3s ease-in-out infinite}}
+@keyframes pulse{50%{box-shadow:0 0 0 1.6vmin rgba(245,168,0,0)}}
+</style>
+</head>
+<body>
+<div class="top"><span>Rivian R2 order</span><div class="eta" id="eta"></div></div>
+<main>
+  <h1 class="stage" id="stage">Loading…</h1>
+  <p class="note" id="note"></p>
+</main>
+<footer>
+  <ol class="track" id="track"></ol>
+  <p class="updated" id="updated"></p>
+</footer>
+<script>
+const STAGES=[
+  {key:"ordered",label:"Ordered"},
+  {key:"confirmed",label:"Confirmed"},
+  {key:"production",label:"In production"},
+  {key:"shipped",label:"Shipped"},
+  {key:"scheduled",label:"Delivery scheduled"},
+  {key:"delivered",label:"Delivered"}
+];
+const $=id=>document.getElementById(id);
+function render(s){
+  const i=Math.max(0,STAGES.findIndex(x=>x.key===s.stage));
+  $("stage").textContent=STAGES[i].label;
+  $("note").textContent=s.note||"";
+  $("track").innerHTML=STAGES.map((x,n)=>
+    `<li class="stop ${n<i?"done":n===i?"current":""}">${x.label}</li>`).join("");
+  let eta="";
+  if(s.eta_date){
+    const d=Math.ceil((new Date(s.eta_date+"T00:00:00")-new Date())/864e5);
+    const when=new Date(s.eta_date+"T00:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric"});
+    eta=d>0?`<b>${d} day${d===1?"":"s"}</b>est. ${when}`:`<b>${when}</b>est. delivery`;
+  }else if(s.eta){eta=`<b>${s.eta}</b>est. delivery`}
+  $("eta").innerHTML=eta;
+  $("updated").textContent=s.updated?`Status updated ${s.updated}`:"";
+}
+async function load(){
+  try{
+    const r=await fetch("status.json?t="+Date.now());
+    if(!r.ok)throw new Error(r.status);
+    render(await r.json());
+  }catch(e){
+    $("stage").textContent="Status unavailable";
+    $("note").textContent="Check that status.json is in the repo and valid JSON.";
+  }
+}
+load();setInterval(load,10*60*1000);
+</script>
+</body>
+</html>
