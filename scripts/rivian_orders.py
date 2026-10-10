@@ -8,6 +8,8 @@ GQL_URL = "https://rivian.com/api/gql/orders/graphql/"
 HEAD = "query vehicleOrders { searchOrders(input: {orderTypes: [PRE_ORDER, VEHICLE], pageInfo: {from: 0, size: 20}}) { data { %s } } }"
 QUERIES = [
     HEAD % "state fulfillmentSummaryStatus configurationStatus orderDate "
+           "items { title configuration { options { groupId optionId optionName } } }",
+    HEAD % "state fulfillmentSummaryStatus configurationStatus orderDate "
            "items { title configuration { options { groupId optionName } } }",
     HEAD % "state fulfillmentSummaryStatus configurationStatus orderDate",
     HEAD % "state fulfillmentSummaryStatus",

@@ -26,14 +26,24 @@ def widget_fields(snap):
             out["reserved"] = f"{d:%B} {d.day}, {d.year}"
         except ValueError:
             pass
-    opts = {}
+    opts, ids = {}, {}
     for item in snap.get("items") or []:
         cfg = (item or {}).get("configuration") or {}
         for o in cfg.get("options") or []:
             opts[o.get("groupId")] = o.get("optionName")
+            if o.get("optionId"):
+                ids[o.get("groupId")] = o["optionId"]
     parts = [opts[k] for k in ("EXP", "INT", "WHL") if opts.get(k)]
     if parts:
         out["config"] = " · ".join(parts)
+    # Rivian's own studio render of this exact configuration (front angle).
+    seg = []
+    for key in ("BLD", "EXP", "TOW", "WHL"):
+        if ids.get(key) and "-" in ids[key]:
+            seg.append(f"{key.lower()}-{ids[key].split('-', 1)[1].lower()}")
+    if len(seg) >= 3:
+        out["image"] = ("https://media.rivian.com/rivian-main/unreal-v2/r2/exterior/"
+                        "angle-0_bg-studio_" + "_".join(seg) + ".webp")
     return out
 
 def pick_stage(snapshots):
