@@ -1,12 +1,12 @@
 {
   "stage": "ordered",
   "state": "ORDERED",
-  "fulfillment": "PENDING_FULFILLMENT",
+  "fulfillment": "READY_FOR_FULFILLMENT",
   "config_status": "SOFT_LOCKED",
   "config": "Midnight · Black Crater Signature · 21\" Liquid Tungsten All-Season",
   "reserved": "April 19, 2024",
   "eta": "",
   "eta_date": "",
   "note": "",
-  "updated": "2026-10-10"
+  "updated": "2026-10-19"
 }
